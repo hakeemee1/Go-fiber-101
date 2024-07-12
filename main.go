@@ -13,7 +13,7 @@ func main() {
 	})
 
 
-	
+
 	type Person struct {
 		Name string `json:"name"`
 		Pass string `json:"pass"`
@@ -30,6 +30,14 @@ func main() {
 		str := p.Name + p.Pass
 		return c.JSON(str)
 	})
+
+	app.Get("/user/:name", func(c *fiber.Ctx) error {
+
+		str := "hello ==> " + c.Params("name")
+		return c.JSON(str)
+	})
+ 
+ 
 
 	app.Listen(":3000")
 }
