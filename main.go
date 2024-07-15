@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"log"
+	"github.com/go-playground/validator/v10"
 )
 
 func main() {
@@ -16,6 +17,7 @@ func main() {
 		},
 	}))
 
+	
 	//Grouping api
 	api := app.Group("/api") // /api
     v1 := api.Group("/v1") // /api/v1
@@ -31,6 +33,7 @@ func main() {
 	}
 	v1.Post("/", func(c *fiber.Ctx) error {
 		p := new(Person)
+		
 
 		if err := c.BodyParser(p); err != nil {
 			return err
@@ -53,6 +56,30 @@ func main() {
 		str := "my search is  " + a
 		return c.JSON(str)
 	})
+
+	
+	//Validation
+	v1.Post("/valid", func(c *fiber.Ctx) error {
+		//Connect to database
+		type User struct {
+			Name     string `json:"name" validate:"required,min=3,max=32"`
+			IsActive *bool  `json:"isactive" validate:"required"`
+			Email    string `json:"email,omitempty" validate:"required,email,min=3,max=32"`
+		}
+		user := new(User)
+		if err := c.BodyParser(&user); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err.Error(),
+			})
+		}
+		validate := validator.New()
+		errors := validate.Struct(user)
+		if errors != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(errors.Error())
+		}
+		return c.JSON(user)
+	})
+ 
 
 	app.Listen(":3000")
 }
