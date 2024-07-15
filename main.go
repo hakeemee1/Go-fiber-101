@@ -12,11 +12,15 @@ func main() {
 	app.Use(basicauth.New(basicauth.Config{
 		Users: map[string]string{
 			"john":  "doe",
-			"admin": "123456",
+			"admin": "admin",
 		},
 	}))
-	
-	app.Get("/", func(c *fiber.Ctx) error {
+
+	//Grouping api
+	api := app.Group("/api") // /api
+    v1 := api.Group("/v1") // /api/v1
+
+	v1.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello,ffff World!") //SendString is Ctx method
 	})
 
@@ -25,7 +29,7 @@ func main() {
 		Name string `json:"name"`
 		Pass string `json:"pass"`
 	}
-	app.Post("/", func(c *fiber.Ctx) error {
+	v1.Post("/", func(c *fiber.Ctx) error {
 		p := new(Person)
 
 		if err := c.BodyParser(p); err != nil {
@@ -38,13 +42,13 @@ func main() {
 		return c.JSON(str)
 	})
 
-	app.Get("/user/:name", func(c *fiber.Ctx) error {
+	v1.Get("/user/:name", func(c *fiber.Ctx) error {
 
 		str := "hello ==> " + c.Params("name")
 		return c.JSON(str)
 	})
 
-	app.Post("/inet", func(c *fiber.Ctx) error {
+	v1.Post("/inet", func(c *fiber.Ctx) error {
 		a := c.Query("search")
 		str := "my search is  " + a
 		return c.JSON(str)
